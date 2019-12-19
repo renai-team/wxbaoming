@@ -125,7 +125,12 @@ func wxapply(w http.ResponseWriter, r *http.Request) {
 	apply := NewApply()
 	err := json.NewDecoder(r.Body).Decode(apply.a)
 	if err != nil {
-		log.Fatal("解码错误：", err)
+		log.Println("解码错误：", err)
+		response(w, "提交错误", 500)
+	}
+	if apply.a.Name == "" || apply.a.Snumber == "" || apply.a.Major == "" || apply.a.Class == "" || apply.a.QQ == "" {
+		response(w, "请完善信息", 500)
+		return
 	}
 	//查找
 	var ok bool
