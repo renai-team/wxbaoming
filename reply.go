@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,7 +20,11 @@ type ApplyMSG struct {
 	Sex       int    `json:"sex,omitempty"`
 	Telephone string `json:"telephone,omitempty"`
 	QQ        string `json:"qq,omitempty"`
-	MSG       string `json:"msg,omitempty"`
+}
+
+//ResponesMSG 相应信息
+type ResponesMSG struct {
+	MSG string `json:"msg,omitempty"`
 }
 
 //Config 配置文件
@@ -127,9 +130,6 @@ func wxapply(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("解码错误：", err)
 		response(w, "提交错误", 500)
-	}
-	if apply.a.Name == "" || apply.a.Snumber == "" || apply.a.Major == "" || apply.a.Class == "" || apply.a.QQ == "" {
-		response(w, "请完善信息", 500)
 		return
 	}
 	//查找
@@ -138,8 +138,7 @@ func wxapply(w http.ResponseWriter, r *http.Request) {
 	if ok, times = apply.selectMsg(); !ok {
 
 		//报过名了
-		if times <= 3 {
-			fmt.Println("报名了 ", times, " 了")
+		if times < 3 {
 			//不超过三次
 			apply.deleteMsg()
 		} else {
@@ -155,7 +154,7 @@ func wxapply(w http.ResponseWriter, r *http.Request) {
 func response(w http.ResponseWriter, msg string, status int) {
 
 	w.Header().Set("Content-Type", "application/json")
-	b, err := json.Marshal(&ApplyMSG{MSG: msg})
+	b, err := json.Marshal(&ResponesMSG{MSG: msg})
 	if err != nil {
 		log.Println("编码错误：", err)
 	}
